@@ -1,15 +1,44 @@
-import { apiBaseUrl } from './config.js';
+// Get the API base URL from config
+const config = {
+    development: {
+        apiUrl: 'http://localhost:5244'
+    },
+    production: {
+        apiUrl: 'https://ballrooms-api.azurewebsites.net'
+    }
+};
 
-const apiUrl = `${apiBaseUrl}/ballrooms`;
+const environment = window.location.hostname.includes('localhost') ? 'development' : 'production';
+const apiBaseUrl = config[environment].apiUrl;
 
+const ballroomUrl = `${apiBaseUrl}/api/Ballroom`;
 const ballroomsDiv = document.getElementById('ballrooms');
 const addForm = document.getElementById('add-ballroom-form');
+const alertContainer = document.getElementById('alert-container');
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchBallrooms();
+    document.getElementById('add-ballroom-form').addEventListener('submit', handleAddBallroom);
+});
 
 async function fetchBallrooms() {
     try {
-        const response = await fetch(apiUrl);
-        const ballrooms = await response.json();
-
+        console.log('Fetching ballrooms from:', ballroomUrl);
+        const response = await fetch(ballroomUrl);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        console.log('Received response:', text);
+        
+        if (!text) {
+            throw new Error('Empty response received');
+        }
+        
+        const ballrooms = JSON.parse(text);
+        
         ballroomsDiv.innerHTML = '';
         
         if (ballrooms.length === 0) {
@@ -89,21 +118,20 @@ async function fetchBallrooms() {
         ballroomsDiv.innerHTML = `
             <div class="col-12">
                 <div class="alert alert-danger" role="alert">
-                    Error loading ballrooms. Please try again later.
+                    Error loading ballrooms. Please try again later. (${error.message})
                 </div>
             </div>
         `;
     }
 }
 
-addForm.addEventListener('submit', async (event) => {
+async function handleAddBallroom(event) {
     event.preventDefault();
 
     const formData = new FormData(addForm);
-    formData.set('isAvailable', formData.get('isAvailable') === 'on');
-
+    
     try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch(ballroomUrl, {
             method: 'POST',
             body: formData
         });
@@ -111,17 +139,17 @@ addForm.addEventListener('submit', async (event) => {
         if (response.ok) {
             addForm.reset();
             await fetchBallrooms();
-            showAlert('success', 'Ballroom added successfully!');
+            showAlert('Ballroom added successfully!', 'success');
         } else {
             const errorData = await response.text();
             console.error('Error adding ballroom:', errorData);
-            showAlert('danger', `Error adding ballroom: ${errorData || response.statusText}`);
+            showAlert(`Error adding ballroom: ${errorData || response.statusText}`, 'danger');
         }
     } catch (error) {
         console.error('Error adding ballroom:', error);
-        showAlert('danger', 'Error adding ballroom. Please try again.');
+        showAlert('Error adding ballroom. Please try again.', 'danger');
     }
-});
+}
 
 async function deleteBallroom(id) {
     if (!confirm('Are you sure you want to delete this ballroom?')) {
@@ -129,21 +157,21 @@ async function deleteBallroom(id) {
     }
 
     try {
-        const response = await fetch(`${apiUrl}/${id}`, {
+        const response = await fetch(`${ballroomUrl}/${id}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
             await fetchBallrooms();
-            showAlert('success', 'Ballroom deleted successfully!');
+            showAlert('Ballroom deleted successfully!', 'success');
         } else {
             const errorData = await response.text();
             console.error('Error deleting ballroom:', errorData);
-            showAlert('danger', `Error deleting ballroom: ${errorData || response.statusText}`);
+            showAlert(`Error deleting ballroom: ${errorData || response.statusText}`, 'danger');
         }
     } catch (error) {
         console.error('Error deleting ballroom:', error);
-        showAlert('danger', 'Error deleting ballroom. Please try again.');
+        showAlert('Error deleting ballroom. Please try again.', 'danger');
     }
 }
 
@@ -175,26 +203,26 @@ async function handleEditSubmit(event, id) {
     formData.append('id', id);
 
     try {
-        const response = await fetch(`${apiUrl}/${id}`, {
+        const response = await fetch(`${ballroomUrl}/${id}`, {
             method: 'PUT',
             body: formData
         });
 
         if (response.ok) {
             await fetchBallrooms();
-            showAlert('success', 'Ballroom updated successfully!');
+            showAlert('Ballroom updated successfully!', 'success');
         } else {
             const errorData = await response.text();
             console.error('Error updating ballroom:', errorData);
-            showAlert('danger', `Error updating ballroom: ${errorData || response.statusText}`);
+            showAlert(`Error updating ballroom: ${errorData || response.statusText}`, 'danger');
         }
     } catch (error) {
         console.error('Error updating ballroom:', error);
-        showAlert('danger', 'Error updating ballroom. Please try again.');
+        showAlert('Error updating ballroom. Please try again.', 'danger');
     }
 }
 
-function showAlert(type, message) {
+function showAlert(message, type) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
     alertDiv.role = 'alert';
@@ -202,13 +230,27 @@ function showAlert(type, message) {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
-    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.form-container'));
+
+    // Clear existing alerts
+    while (alertContainer.firstChild) {
+        alertContainer.removeChild(alertContainer.firstChild);
+    }
+
+    // Add new alert
+    alertContainer.appendChild(alertDiv);
 
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
-        alertDiv.remove();
+        if (alertDiv.parentNode === alertContainer) {
+            alertContainer.removeChild(alertDiv);
+        }
     }, 5000);
 }
+
+// Make functions globally available
+window.editBallroom = editBallroom;
+window.deleteBallroom = deleteBallroom;
+window.cancelEdit = cancelEdit;
 
 // Initial load
 fetchBallrooms();

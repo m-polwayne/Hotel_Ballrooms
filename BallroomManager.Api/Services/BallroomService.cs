@@ -92,17 +92,32 @@ namespace BallroomManager.Api.Services
 
         private async Task<string> UploadImageAsync(IFormFile imageFile)
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            await containerClient.CreateIfNotExistsAsync();  
-            var blobName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-            var blobClient = containerClient.GetBlobClient(blobName);
-
-            using (var stream = imageFile.OpenReadStream())
+            try
             {
-                await blobClient.UploadAsync(stream, true); 
-            }
+                var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+                await containerClient.CreateIfNotExistsAsync();
+                
+                // Generate a unique filename with the original extension
+                var blobName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                var blobClient = containerClient.GetBlobClient(blobName);
 
-            return blobClient.Uri.AbsoluteUri; 
+                Console.WriteLine($"Uploading image to: {blobClient.Uri}");
+
+                using (var stream = imageFile.OpenReadStream())
+                {
+                    await blobClient.UploadAsync(stream, true);
+                }
+
+                // Always return just the filename in both development and production
+                // The frontend will handle constructing the full URL
+                return blobName;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error uploading image: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
          private async Task DeleteImageAsync(string imageUrl)
@@ -121,18 +136,33 @@ namespace BallroomManager.Api.Services
         {
             try
             {
-                var blobClient = _blobServiceClient.GetBlobContainerClient(_containerName).GetBlobClient(filename);
+                // Clean up the filename in case it contains URL parts
+                filename = Path.GetFileName(filename);
+                Console.WriteLine($"Attempting to retrieve image: {filename}");
+                
+                var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+                await containerClient.CreateIfNotExistsAsync();
+                
+                var blobClient = containerClient.GetBlobClient(filename);
+                Console.WriteLine($"Checking if blob exists at: {blobClient.Uri}");
+                
                 if (!await blobClient.ExistsAsync())
                 {
+                    Console.WriteLine($"Blob not found: {filename}");
                     return null;
                 }
 
                 using var memoryStream = new MemoryStream();
                 await blobClient.DownloadToAsync(memoryStream);
-                return memoryStream.ToArray();
+                memoryStream.Position = 0;
+                var bytes = memoryStream.ToArray();
+                Console.WriteLine($"Successfully retrieved image: {filename}, size: {bytes.Length} bytes");
+                return bytes;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error retrieving image: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return null;
             }
         }

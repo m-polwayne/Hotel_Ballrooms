@@ -8,4 +8,4 @@ const config = {
 };
 
 const environment = window.location.hostname.includes('localhost') ? 'development' : 'production';
-export const apiBaseUrl = config[environment].apiUrl; 
+export const apiBaseUrl = 'http://localhost:5244'; 

@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Ballrooms</title>
+    <title>Luxury Hotel Ballrooms</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">Available Ballrooms</h1>
-        <div id="ballroom-list" class="row"></div>
+    <div class="container">
+        <h1 class="text-center mb-5">Hotel Ballrooms</h1>
+        <div id="ballroom-list" class="row g-4"></div>
     </div>
 
     <!-- Ballroom Details Modal -->
@@ -24,26 +25,30 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-12 mb-4">
-                            <img id="modal-image" src="" alt="Ballroom" class="img-fluid rounded">
+                        <div class="col-12">
+                            <img id="modal-image" src="" alt="Ballroom" class="img-fluid w-100">
                         </div>
                         <div class="col-md-8">
-                            <h3 id="modal-name"></h3>
+                            <h3 id="modal-name" class="mt-4"></h3>
                             <p id="modal-description" class="mt-3"></p>
                         </div>
                         <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5>Details</h5>
-                                    <p><i class="fas fa-users"></i> Capacity: <span id="modal-capacity"></span></p>
-                                    <p><i class="fas fa-ruler-combined"></i> Size: <span id="modal-size"></span></p>
+                            <div class="details-card mt-4">
+                                <h5>Specifications</h5>
+                                <div class="feature-icon">
+                                    <i class="fas fa-users"></i>
+                                    <span id="modal-capacity"></span>
+                                </div>
+                                <div class="feature-icon">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    <span id="modal-size"></span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" onclick="showBookingForm()">Book Now</button>
                 </div>
             </div>
@@ -61,50 +66,51 @@
                 <div class="modal-body">
                     <form id="booking-form" onsubmit="event.preventDefault(); submitBooking();">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Your Name:</label>
+                            <label for="name" class="form-label">Your Name</label>
                             <input type="text" class="form-control" id="name" required>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="email" class="form-label">Your Email:</label>
+                            <label for="email" class="form-label">Email Address</label>
                             <input type="email" class="form-control" id="email" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Phone Number:</label>
+                            <label for="phone" class="form-label">Phone Number</label>
                             <input type="tel" class="form-control" id="phone" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="event-date" class="form-label">Event Date:</label>
+                            <label for="event-date" class="form-label">Event Date</label>
                             <input type="date" class="form-control" id="event-date" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="guests" class="form-label">Number of Guests:</label>
+                            <label for="guests" class="form-label">Number of Guests</label>
                             <input type="number" class="form-control" id="guests" required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="event-type" class="form-label">Event Type:</label>
+                            <label for="event-type" class="form-label">Event Type</label>
                             <select class="form-select" id="event-type" required>
                                 <option value="">Select Event Type</option>
                                 <option value="wedding">Wedding</option>
                                 <option value="corporate">Corporate Event</option>
                                 <option value="birthday">Birthday Party</option>
                                 <option value="conference">Conference</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="special-requests" class="form-label">Special Requests:</label>
+                            <label for="special-requests" class="form-label">Special Requests</label>
                             <textarea class="form-control" id="special-requests" rows="3"></textarea>
                         </div>
 
                         <input type="hidden" id="ballroom-id">
                         
                         <div class="modal-footer px-0 pb-0">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-primary">Confirm Booking</button>
                         </div>
                     </form>
@@ -114,7 +120,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module" src="script.js"></script>
 </body>
 </html>

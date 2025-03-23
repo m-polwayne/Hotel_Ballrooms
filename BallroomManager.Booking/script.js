@@ -9,10 +9,22 @@ let selectedBallroom = null;
 
 // Function to get appropriate image URL
 function getImageUrl(ballroom) {
-    if (!ballroom.imageUrl || ballroom.imageUrl.includes('UseDevelopmentStorage=true')) {
-        // Return a default image URL for development or when no image is available
+    if (!ballroom.imageUrl) {
+        // Return a default image URL when no image is available
         return 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80';
     }
+    
+    // Extract the filename from either a full URL or just the filename
+    let filename = ballroom.imageUrl;
+    if (ballroom.imageUrl.includes('/')) {
+        filename = ballroom.imageUrl.split('/').pop();
+    }
+    
+    // In development, always use the local API endpoint
+    if (window.location.hostname === 'localhost') {
+        return `${apiBaseUrl}/ballrooms/images/${filename}`;
+    }
+    
     return ballroom.imageUrl;
 }
 
@@ -78,7 +90,7 @@ function displayBallrooms(ballrooms) {
     }
 
     ballrooms.forEach(ballroom => {
-        console.log('Processing ballroom:', ballroom.name, 'Image URL:', ballroom.imageUrl);
+        console.log('Processing ballroom:', ballroom);
         const imageUrl = getImageUrl(ballroom);
         const div = document.createElement("div");
         div.className = "col-md-6 col-lg-4 mb-4";
@@ -92,7 +104,7 @@ function displayBallrooms(ballrooms) {
                     <h5 class="card-title">${ballroom.name}</h5>
                     <p class="card-text">
                         <i class="fas fa-users"></i> Capacity: ${ballroom.capacity} guests<br>
-                        <i class="fas fa-ruler-combined"></i> Size: ${ballroom.dimensions}
+                        <i class="fas fa-ruler-combined"></i> Size: ${ballroom.dimesions || 'Dimensions not available'}
                     </p>
                     <button class="btn btn-primary w-100" onclick="showDetails(${JSON.stringify(ballroom).replace(/"/g, '&quot;')})">
                         View Details
@@ -104,6 +116,22 @@ function displayBallrooms(ballrooms) {
     });
 }
 
+function formatDimensions(ballroom) {
+    console.log('Formatting dimensions for:', ballroom.name, 'Dimensions:', ballroom.dimesions);
+    
+    // Return the dimesions string directly if available (note the spelling)
+    if (typeof ballroom.dimesions === 'string' ) {
+        return ballroom.dimesions;
+    }
+    
+    // If we have length and width, format them to match the same format
+    if (ballroom.length && ballroom.width) {
+        return `${ballroom.length}m x ${ballroom.width}m`;
+    }
+    
+    return ballroom.dimesions;
+}
+
 function showDetails(ballroom) {
     selectedBallroom = ballroom;
     
@@ -111,9 +139,9 @@ function showDetails(ballroom) {
     const modalImage = document.getElementById("modal-image");
     modalImage.src = getImageUrl(ballroom);
     document.getElementById("modal-name").textContent = ballroom.name;
-    document.getElementById("modal-description").textContent = ballroom.description;
+    document.getElementById("modal-description").textContent = ballroom.description || 'No description available';
     document.getElementById("modal-capacity").textContent = `${ballroom.capacity} guests`;
-    document.getElementById("modal-size").textContent = ballroom.dimensions;
+    document.getElementById("modal-size").textContent = formatDimensions(ballroom);
 
     // Show the modal
     const detailsModal = document.getElementById('detailsModal');
@@ -174,11 +202,19 @@ async function submitBooking() {
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
 
-        const response = await fetch(`${apiBaseUrl}/bookings`, {
+        console.log('Submitting booking:', booking);
+        const response = await fetch(`${apiBaseUrl}/booking`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
             body: JSON.stringify(booking)
         });
+
+        console.log('Booking response status:', response.status);
+        const responseText = await response.text();
+        console.log('Booking response:', responseText);
 
         if (response.ok) {
             const bookingModal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
@@ -187,8 +223,7 @@ async function submitBooking() {
             form.reset();
             fetchBallrooms(); // Refresh the ballroom list
         } else {
-            const error = await response.text();
-            showAlert(`Error submitting booking: ${error}`, 'danger');
+            showAlert(`Error submitting booking: ${responseText}`, 'danger');
         }
     } catch (error) {
         console.error('Error submitting booking:', error);
