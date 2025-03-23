@@ -169,3 +169,4 @@ C:\Users\motsh\OneDrive\Documentos\Hotel_Ballrooms\BallroomManager.Api\bin\Debug
 C:\Users\motsh\OneDrive\Documentos\Hotel_Ballrooms\BallroomManager.Api\bin\Debug\net9.0\BallroomManager.Api.xml
 C:\Users\motsh\OneDrive\Documentos\Hotel_Ballrooms\BallroomManager.Api\obj\Debug\net9.0\BallroomManager.Api.genruntimeconfig.cache
 C:\Users\motsh\OneDrive\Documentos\Hotel_Ballrooms\BallroomManager.Api\obj\Debug\net9.0\ref\BallroomManager.Api.dll
+C:\Users\motsh\OneDrive\Documentos\Hotel_Ballrooms\BallroomManager.Api\bin\Debug\net9.0\appsettings.Production.json

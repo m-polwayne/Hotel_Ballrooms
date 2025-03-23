@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "G41VpeeVmXR51IAsf9J9LPeHTiAl05EJXkWIeYZkKv8=",
+  "Source": "BallroomManager.Api",
+  "BasePath": "_content/BallroomManager.Api",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

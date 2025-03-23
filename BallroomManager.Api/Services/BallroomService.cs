@@ -116,5 +116,25 @@ namespace BallroomManager.Api.Services
 
             await blobClient.DeleteIfExistsAsync();
         }
+
+        public async Task<byte[]?> GetImageAsync(string filename)
+        {
+            try
+            {
+                var blobClient = _blobServiceClient.GetBlobContainerClient(_containerName).GetBlobClient(filename);
+                if (!await blobClient.ExistsAsync())
+                {
+                    return null;
+                }
+
+                using var memoryStream = new MemoryStream();
+                await blobClient.DownloadToAsync(memoryStream);
+                return memoryStream.ToArray();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
     }
 }

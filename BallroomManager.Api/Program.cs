@@ -42,19 +42,16 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         corsBuilder =>
         {
-            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
-            if (builder.Environment.IsDevelopment())
-            {
-                corsBuilder.AllowAnyOrigin()
-                       .AllowAnyHeader()
-                       .AllowAnyMethod();
-            }
-            else
-            {
-                corsBuilder.WithOrigins(allowedOrigins)
-                       .AllowAnyHeader()
-                       .AllowAnyMethod();
-            }
+            corsBuilder.WithOrigins(
+                    "https://ballroomsstore.z1.web.core.windows.net",
+                    "http://localhost:5244",
+                    "http://localhost:8000",
+                    "http://localhost:5080",
+                    "https://ballrooms-web.azurewebsites.net",
+                    "https://ballrooms-booking.azurewebsites.net"
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         });
 });
 

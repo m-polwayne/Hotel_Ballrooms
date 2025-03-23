@@ -46,6 +46,40 @@ namespace BallroomManager.Api.Controllers
         }
 
         /// <summary>
+        /// Gets a ballroom image by filename
+        /// </summary>
+        /// <param name="filename">The filename of the image to retrieve</param>
+        /// <returns>The image file</returns>
+        [HttpGet("images/{filename}")]
+        public async Task<IActionResult> GetImage(string filename)
+        {
+            try
+            {
+                var imageBytes = await _ballroomService.GetImageAsync(filename);
+                if (imageBytes == null)
+                {
+                    return NotFound();
+                }
+
+                // Determine content type based on file extension
+                var extension = Path.GetExtension(filename).ToLowerInvariant();
+                var contentType = extension switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    _ => "application/octet-stream"
+                };
+
+                return File(imageBytes, contentType);
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+        }
+
+        /// <summary>
         /// Creates a new ballroom
         /// </summary>
         /// <param name="ballroom">The ballroom to create</param>
