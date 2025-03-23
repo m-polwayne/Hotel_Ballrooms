@@ -8,12 +8,10 @@ namespace BallroomManager.Api.Controllers
     [Route("api/[controller]")]
     public class BookingController : ControllerBase
     {
-        private readonly IBallroomService _ballroomService;
         private readonly IBookingService _bookingService;
 
-        public BookingController(IBallroomService ballroomService, IBookingService bookingService)
+        public BookingController(IBookingService bookingService)
         {
-            _ballroomService = ballroomService;
             _bookingService = bookingService;
         }
 
@@ -25,88 +23,58 @@ namespace BallroomManager.Api.Controllers
                 var bookings = await _bookingService.GetAllBookingsAsync();
                 return Ok(bookings);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, "An error occurred while retrieving bookings");
+                return StatusCode(500, "An error occurred while retrieving bookings.");
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateBooking([FromBody] BookingRequest booking)
-        {
-            try
-            {
-                // Validate ballroom exists and has capacity
-                var ballroom = await _ballroomService.GetBallroomByIdAsync(booking.BallroomId);
-                if (ballroom == null)
-                {
-                    return NotFound("Ballroom not found");
-                }
-
-                if (booking.GuestCount > ballroom.Capacity)
-                {
-                    return BadRequest($"Guest count exceeds ballroom capacity of {ballroom.Capacity}");
-                }
-
-                var newBooking = await _bookingService.CreateBookingAsync(booking);
-                return Ok(new { message = "Booking request received successfully", booking = newBooking });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An error occurred while processing your booking");
-            }
-        }
-
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateBookingStatus(int id, [FromBody] UpdateBookingStatusRequest request)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BookingResponse>> GetBooking(int id)
         {
             try
             {
                 var booking = await _bookingService.GetBookingByIdAsync(id);
                 if (booking == null)
-                {
-                    return NotFound("Booking not found");
-                }
+                    return NotFound();
 
-                await _bookingService.UpdateBookingStatusAsync(id, request.Status);
-                return Ok(new { message = $"Booking status updated to {request.Status}" });
+                return Ok(booking);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, "An error occurred while updating the booking status");
+                return StatusCode(500, "An error occurred while retrieving the booking.");
             }
         }
-    }
 
-    public class UpdateBookingStatusRequest
-    {
-        public string Status { get; set; } = string.Empty;
-    }
+        [HttpPost]
+        public async Task<ActionResult<BookingResponse>> CreateBooking(BookingRequest request)
+        {
+            try
+            {
+                var booking = await _bookingService.CreateBookingAsync(request);
+                return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while creating the booking.");
+            }
+        }
 
-    public class BookingResponse
-    {
-        public int Id { get; set; }
-        public string CustomerName { get; set; } = string.Empty;
-        public string CustomerEmail { get; set; } = string.Empty;
-        public string CustomerPhone { get; set; } = string.Empty;
-        public DateTime EventDate { get; set; }
-        public string EventType { get; set; } = string.Empty;
-        public int GuestCount { get; set; }
-        public string? SpecialRequests { get; set; }
-        public string Status { get; set; } = "PENDING";
-        public int BallroomId { get; set; }
-        public string BallroomName { get; set; } = string.Empty;
-    }
+        [HttpPut("{id}/status")]
+        public async Task<ActionResult<BookingResponse>> UpdateBookingStatus(int id, [FromBody] string status)
+        {
+            try
+            {
+                var booking = await _bookingService.UpdateBookingStatusAsync(id, status);
+                if (booking == null)
+                    return NotFound();
 
-    public class BookingRequest
-    {
-        public int BallroomId { get; set; }
-        public string CustomerName { get; set; } = string.Empty;
-        public string CustomerEmail { get; set; } = string.Empty;
-        public string CustomerPhone { get; set; } = string.Empty;
-        public DateTime EventDate { get; set; }
-        public string EventType { get; set; } = string.Empty;
-        public int GuestCount { get; set; }
-        public string? SpecialRequests { get; set; }
+                return Ok(booking);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while updating the booking status.");
+            }
+        }
     }
 } 

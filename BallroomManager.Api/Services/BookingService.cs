@@ -1,3 +1,4 @@
+using BallroomManager.Api.Data;
 using BallroomManager.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,24 +7,22 @@ namespace BallroomManager.Api.Services
     public class BookingService : IBookingService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IBallroomService _ballroomService;
 
-        public BookingService(ApplicationDbContext context, IBallroomService ballroomService)
+        public BookingService(ApplicationDbContext context)
         {
             _context = context;
-            _ballroomService = ballroomService;
         }
 
         public async Task<IEnumerable<BookingResponse>> GetAllBookingsAsync()
         {
             var bookings = await _context.Bookings
                 .Include(b => b.Ballroom)
-                .OrderByDescending(b => b.EventDate)
                 .ToListAsync();
 
             return bookings.Select(b => new BookingResponse
             {
                 Id = b.Id,
+                BallroomId = b.BallroomId,
                 CustomerName = b.CustomerName,
                 CustomerEmail = b.CustomerEmail,
                 CustomerPhone = b.CustomerPhone,
@@ -32,8 +31,8 @@ namespace BallroomManager.Api.Services
                 GuestCount = b.GuestCount,
                 SpecialRequests = b.SpecialRequests,
                 Status = b.Status,
-                BallroomId = b.BallroomId,
-                BallroomName = b.Ballroom.Name
+                CreatedAt = b.CreatedAt,
+                UpdatedAt = b.UpdatedAt
             });
         }
 
@@ -49,6 +48,7 @@ namespace BallroomManager.Api.Services
             return new BookingResponse
             {
                 Id = booking.Id,
+                BallroomId = booking.BallroomId,
                 CustomerName = booking.CustomerName,
                 CustomerEmail = booking.CustomerEmail,
                 CustomerPhone = booking.CustomerPhone,
@@ -57,8 +57,8 @@ namespace BallroomManager.Api.Services
                 GuestCount = booking.GuestCount,
                 SpecialRequests = booking.SpecialRequests,
                 Status = booking.Status,
-                BallroomId = booking.BallroomId,
-                BallroomName = booking.Ballroom.Name
+                CreatedAt = booking.CreatedAt,
+                UpdatedAt = booking.UpdatedAt
             };
         }
 
@@ -73,24 +73,57 @@ namespace BallroomManager.Api.Services
                 EventType = request.EventType,
                 GuestCount = request.GuestCount,
                 SpecialRequests = request.SpecialRequests,
-                Status = "PENDING",
-                BallroomId = request.BallroomId
+                Status = "Pending",
+                BallroomId = request.BallroomId,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
-            return await GetBookingByIdAsync(booking.Id);
+            return new BookingResponse
+            {
+                Id = booking.Id,
+                BallroomId = booking.BallroomId,
+                CustomerName = booking.CustomerName,
+                CustomerEmail = booking.CustomerEmail,
+                CustomerPhone = booking.CustomerPhone,
+                EventDate = booking.EventDate,
+                EventType = booking.EventType,
+                GuestCount = booking.GuestCount,
+                SpecialRequests = booking.SpecialRequests,
+                Status = booking.Status,
+                CreatedAt = booking.CreatedAt,
+                UpdatedAt = booking.UpdatedAt
+            };
         }
 
-        public async Task UpdateBookingStatusAsync(int id, string status)
+        public async Task<BookingResponse> UpdateBookingStatusAsync(int id, string status)
         {
             var booking = await _context.Bookings.FindAsync(id);
             if (booking == null)
-                throw new KeyNotFoundException($"Booking with ID {id} not found");
+                return null;
 
-            booking.Status = status.ToUpper();
+            booking.Status = status;
+            booking.UpdatedAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
+
+            return new BookingResponse
+            {
+                Id = booking.Id,
+                BallroomId = booking.BallroomId,
+                CustomerName = booking.CustomerName,
+                CustomerEmail = booking.CustomerEmail,
+                CustomerPhone = booking.CustomerPhone,
+                EventDate = booking.EventDate,
+                EventType = booking.EventType,
+                GuestCount = booking.GuestCount,
+                SpecialRequests = booking.SpecialRequests,
+                Status = booking.Status,
+                CreatedAt = booking.CreatedAt,
+                UpdatedAt = booking.UpdatedAt
+            };
         }
     }
 } 

@@ -6,7 +6,7 @@ namespace BallroomManager.Api.Services
     {
         Task<IEnumerable<BookingResponse>> GetAllBookingsAsync();
         Task<BookingResponse> GetBookingByIdAsync(int id);
-        Task<BookingResponse> CreateBookingAsync(BookingRequest booking);
-        Task UpdateBookingStatusAsync(int id, string status);
+        Task<BookingResponse> CreateBookingAsync(BookingRequest request);
+        Task<BookingResponse> UpdateBookingStatusAsync(int id, string status);
     }
 } 

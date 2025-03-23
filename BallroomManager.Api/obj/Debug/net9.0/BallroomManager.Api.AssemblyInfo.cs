@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BallroomManager.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a8a150fccfc46ecf0f9824affcfa11f400a99ec2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ddcf5319632620f6b0b714378820424c9575012")]
 [assembly: System.Reflection.AssemblyProductAttribute("BallroomManager.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BallroomManager.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

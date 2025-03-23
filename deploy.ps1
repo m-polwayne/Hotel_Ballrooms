@@ -1,7 +1,7 @@
 # Azure Deployment Script
 param(
     [string]$ResourceGroupName = "BallroomBooking",
-    [string]$Location = "eastus",
+    [string]$Location = "eastus2",
     [string]$AppServicePlanName = "BallroomBookingPlan",
     [string]$WebAppName = "BallroomBookingWeb",
     [string]$ApiAppName = "BallroomBookingApi"
@@ -20,17 +20,39 @@ if (!$account) {
     exit 1
 }
 
-# Create Resource Group
-Write-Host "Creating Resource Group..."
-az group create --name $ResourceGroupName --location $Location
+# Create Resource Group (if it doesn't exist)
+Write-Host "Checking Resource Group..."
+$resourceGroup = az group show --name $ResourceGroupName | ConvertFrom-Json
+if (!$resourceGroup) {
+    Write-Host "Creating Resource Group..."
+    az group create --name $ResourceGroupName --location $Location
+}
 
-# Create App Service Plan
-Write-Host "Creating App Service Plan..."
-az appservice plan create --name $AppServicePlanName --resource-group $ResourceGroupName --sku F1 --is-linux
+# Try different regions for App Service Plan
+$regions = @("eastus2", "westus2", "centralus", "southcentralus")
+$planCreated = $false
+
+foreach ($region in $regions) {
+    Write-Host "Trying to create App Service Plan in $region..."
+    try {
+        az appservice plan create --name $AppServicePlanName --resource-group $ResourceGroupName --sku F1 --is-linux --location $region
+        $planCreated = $true
+        $Location = $region
+        break
+    }
+    catch {
+        Write-Host "Failed to create plan in $region. Trying next region..."
+    }
+}
+
+if (-not $planCreated) {
+    Write-Error "Failed to create App Service Plan in any region. Please check your subscription quota."
+    exit 1
+}
 
 # Create Web App for API
 Write-Host "Creating API Web App..."
-az webapp create --name $ApiAppName --resource-group $ResourceGroupName --plan $AppServicePlanName --runtime "DOTNET|6.0"
+az webapp create --name $ApiAppName --resource-group $ResourceGroupName --plan $AppServicePlanName --runtime "DOTNET:6.0"
 
 # Create Static Web App for Frontend
 Write-Host "Creating Static Web App..."
@@ -39,15 +61,16 @@ az staticwebapp create --name $WebAppName --resource-group $ResourceGroupName --
 # Deploy API
 Write-Host "Deploying API..."
 cd BallroomManager.Api
-dotnet publish -c Release
-cd bin/Release/net6.0/publish
+dotnet clean
+dotnet build -c Release
+dotnet publish -c Release -o ./publish
+cd publish
 Compress-Archive -Path * -DestinationPath ../publish.zip -Force
-az webapp deployment source config-zip --resource-group $ResourceGroupName --name $ApiAppName --src ../publish.zip
+az webapp deploy --resource-group $ResourceGroupName --name $ApiAppName --src-path ../publish.zip --type zip
 
 # Deploy Frontend
 Write-Host "Deploying Frontend..."
-cd ../../../../
-cd BallroomManager.Web
+cd ../../BallroomManager.Web
 az staticwebapp deploy --name $WebAppName --source .
 
 Write-Host "Deployment completed!"
