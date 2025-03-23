@@ -1,11 +1,13 @@
 const config = {
     development: {
-        apiUrl: 'http://localhost:5244/api'
+        apiUrl: 'http://localhost:5244'
     },
     production: {
-        apiUrl: 'https://ballrooms-api.azurewebsites.net/api'
+        apiUrl: 'https://ballroomBookingApi.azurewebsites.net'
     }
 };
 
-const environment = window.location.hostname.includes('localhost') ? 'development' : 'production';
-export const apiBaseUrl = 'http://localhost:5244'; 
+const environment = window.location.hostname === 'localhost' ? 'development' : 'production';
+const apiBaseUrl = config[environment].apiUrl;
+
+export { apiBaseUrl }; 
