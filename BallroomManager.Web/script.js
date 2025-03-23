@@ -1,4 +1,6 @@
-const apiUrl = 'http://localhost:5244/api/ballrooms';
+import { apiBaseUrl } from './config.js';
+
+const apiUrl = `${apiBaseUrl}/ballrooms`;
 
 const ballroomsDiv = document.getElementById('ballrooms');
 const addForm = document.getElementById('add-ballroom-form');
