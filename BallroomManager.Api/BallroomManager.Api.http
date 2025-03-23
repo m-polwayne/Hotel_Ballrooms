@@ -1,0 +1,6 @@
+@BallroomManager.Api_HostAddress = http://localhost:5244
+
+GET {{BallroomManager.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
