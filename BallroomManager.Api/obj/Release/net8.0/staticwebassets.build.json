@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "bUpP5BY07t9X/axmxh3MAGsMBQywVVCDDpyxxL/Xe68=",
+  "Source": "BallroomManager.Api",
+  "BasePath": "_content/BallroomManager.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
